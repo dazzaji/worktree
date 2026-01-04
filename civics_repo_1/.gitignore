@@ -48,7 +48,7 @@ ENV/
 env.bak/
 venv.bak/
 .python-version
-Pipfile.lock
+# Note: Pipfile.lock is NOT ignored - keep it for reproducible builds
 
 # pytest / coverage
 htmlcov/
