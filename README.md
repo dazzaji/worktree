@@ -1,6 +1,6 @@
 # worktree
 
-**Run multiple AI coding agents in parallel on the same repo — without conflicts.**
+**Run multiple AI coding agents in parallel on the same repo — without directory conflicts.**
 
 This repo provides `worktreectl.sh`, a Git worktree manager designed for multi-agent AI development. Each agent gets its own isolated directory and branch, so Claude Code, Codex, or any other AI CLI can work simultaneously without stepping on each other.
 
