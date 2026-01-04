@@ -10,7 +10,7 @@ When two AI agents share a VS Code window and one switches branches, *both* agen
 
 ## The Solution
 
-Git worktrees. Each agent works in a **separate directory** with its **own branch checkout**. No branch switching in shared space. No conflicts.
+Git worktrees. Each agent works in a **separate directory** with its **own branch checkout**. No branch switching in shared space. No working directory conflicts (merge conflicts at push time are still possible if agents edit the same files).
 
 ```
 repo/                           # main repo (on main branch)
@@ -32,7 +32,7 @@ code ../.worktrees/<repo>/worktree_codex-task
 
 # 3. Run each agent CLI in its own window
 #    Claude Code in window 1, Codex in window 2
-#    Both work in parallel, no conflicts
+#    Both work in parallel without directory conflicts
 
 # 4. When done, clean up
 ./worktreectl.sh remove claude-task --delete-branch
@@ -74,19 +74,22 @@ Each VS Code window has one working directory. If both agents share a window, fi
 | `--branch <name>` | Explicit branch name (default: `agent/<name>`) |
 | `--root <path>` | Where to put worktrees (default: `../.worktrees/<repo>`) |
 | `--use-existing-branch` | Attach worktree to an existing branch |
-| `--delete-branch` | Also delete the branch when removing worktree |
+| `--fetch` | Run `git fetch --prune` before creating |
 | `--no-cd` | Don't auto-cd into worktree when sourced |
+| `--delete-branch` | Also delete the branch when removing worktree |
+| `--delete-branch-force` | Force delete branch (`-D`) even if unmerged |
+| `--force` | Force remove worktree even with uncommitted changes |
 
 ## Defaults
 
 These work out of the box for most multi-agent setups:
 
-| Setting | Default |
-|---------|---------|
-| Base ref | `main` (fallback: master, origin/main, origin/master, HEAD) |
-| Branch prefix | `agent/` |
-| Directory prefix | `worktree_` |
-| Worktree root | `../.worktrees/<repo>/` (outside repo, keeps it clean) |
+| Setting | Default | Override |
+|---------|---------|----------|
+| Base ref | `main` (fallback: master, origin/main, origin/master, HEAD) | `--from <ref>` |
+| Branch prefix | `agent/` | `--branch-prefix <prefix>` |
+| Directory prefix | `worktree_` | `--dir-prefix <prefix>` |
+| Worktree root | `../.worktrees/<repo>/` (outside repo, keeps it clean) | `--root <path>` or `WORKTREE_ROOT` env var |
 
 ## Agent Conventions
 
@@ -95,7 +98,7 @@ For AI agents reading this doc:
 - **Your worktree path**: `../.worktrees/<repo>/worktree_<name>/`
 - **Your branch**: `agent/<name>` (unless overridden)
 - **Stay in your directory**: Never `cd` to another agent's worktree
-- **Never run `git checkout`**: Your branch is already checked out in your worktree
+- **Avoid `git checkout` in shared spaces**: Your branch is already checked out in your worktree. Only run `git checkout` in your own worktree if you intentionally want to switch branches there. Never run it in the main repo or another agent's worktree.
 - **Commit and push normally**: `git add`, `git commit`, `git push` all work as expected
 
 ## Backwards Compatibility
